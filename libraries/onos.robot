@@ -161,3 +161,18 @@ Remove All Devices From ONOS
         Run Keyword If    '${dpid}' != ''
         ...    Should Be Equal As Integers    ${rc}    0
     END
+
+Get Bandwidth Details
+    [Arguments]     ${bandwidth_profile_name}
+    [Documentation]    Collects the bandwidth profile details for the given bandwidth profile and returns the maximum bandwidth
+    ${banwidth_profile_values}=    Execute ONOS CLI Command    ${ip}    ${port}    bandwidthprofile ${bandwidth_profile_name}
+    @{banwidth_profile_array}=     Split String     ${banwidth_profile_values}     ,
+    FOR    ${value}    IN    @{banwidth_profile_array}
+	@{parameter_value_pair}=      Split String     ${value}      =
+	${cir_value}      Run Keyword and Ignore Error    Run Keyword If     '${parameter_value_pair[0]}' == 'committedInformationRate'    Set Variable    ${parameter_value_pair[1]}  
+ 	${cbs_value}      Run Keyword and Ignore Error    Run Keyword If     '${parameter_value_pair[0]}' == 'committedBurstSize'    Set Variable    ${parameter_value_pair[1]}  
+	${eir_value}      Run Keyword and Ignore Error    Run Keyword If     '${parameter_value_pair[0]}' == 'exceededInformationRate'    Set Variable    ${parameter_value_pair[1]}  
+	${ebs_value}      Run Keyword and Ignore Error    Run Keyword If     '${parameter_value_pair[0]}' == 'exceededBurstSize'    Set Variable    ${parameter_value_pair[1]}  
+    END
+    ${limiting_BW}=    Evaluate       ${cir_value}+${cbs_value}+${eir_value}+${ebs_value}
+    [Return]    {${limiting_BW}

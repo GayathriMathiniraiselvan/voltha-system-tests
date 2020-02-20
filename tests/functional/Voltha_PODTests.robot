@@ -407,6 +407,20 @@ Test disable ONUs and OLT then delete ONUs and OLT
     Run Keyword If    ${has_dataplane}    sleep    180s
     #setup
 
+Data plane verification with user defined bandwidth profiles
+    [Documentation]    Pre-requisite: The setup should be brought up with the required bandwidth profile sadis file provided
+    [Tags]    BW-profile    VOL-2052
+	${iperf_rg_output}=    Login And Run Command On Remote System
+        ...    iperf -c ${bng_ip}   ${rg_ip}    ${user}
+        ...    ${pass}    ${container_type}    ${container_name}
+	${iperf_bng_output}=   Login and Run Command On Remote System
+        ...    iperf -s   ${bng_ip}    ${user}
+        ...    ${pass}    ${container_type}    ${container_name}
+	${limiting_upstream_bwvalue}=     Get Bandwidth Details      ${upstream_bandwidth_profile}
+	${limiting_dnstream_bwvalue}=     Get Bandwidth Details      ${downstream_bandwidth_profile}
+	Run Keyword if    ${limiting_upstream_bwvalue} > ${iperf_rg_output}     The upstream traffic doesnt exceed the limit 
+	Run Keyword if    ${limiting_dnstream_bwvalue} > ${iperf_bng_output}     The downstream traffic doesnt exceed the limit 
+
 Sanity E2E Test for OLT/ONU on POD With Core Fail and Restart
     [Documentation]    Deploys an device instance and waits for it to authenticate. After
     ...    authentication is successful the rw-core deployment is scaled to 0 instances to
